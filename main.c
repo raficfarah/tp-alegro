@@ -276,6 +276,9 @@ int main(int argc, char **argv){
 					if(jogador.x >= poste[i].position - 4 && jogador.x <= poste[i].position + 4){
 						poste[i].status = 1;
 						//printf("\nstatus poste[%d] = %d\n----", i, poste[i].status);
+						/* if (ev.keyboard.keycode ==  ALLEGRO_KEY_A || ev.keyboard.keycode ==  ALLEGRO_KEY_D){
+							poste[i].status = 0;
+						} */
 					}
 				}
 			}
