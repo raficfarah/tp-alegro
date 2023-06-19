@@ -105,8 +105,8 @@ void inicializaPratos(Prato pratos[]) {
 	int i;
 	for(i=0; i<NUM_PRATOS; i++) {
 		pratos[i].x = i*2;
-		pratos[i].tempoParaAparecer = geraTempoPrato(i);
 		pratos[i].energia = 0;
+		pratos[i].tempoParaAparecer = geraTempoPrato(i);
 	}
 }
 
@@ -130,8 +130,8 @@ void atualizaPoste(Poste poste[], Jogador *j) {
 	for (i=0; i<NUM_PRATOS; i++){
 		if (poste[i].status != 0) {
 			poste[i].cor = al_map_rgb(255,0,0);
-			al_draw_line(poste[i].position, 432, poste[i].position, 108, poste[i].cor, 5);
-		}
+		al_draw_line(poste[i].position, 432, poste[i].position, 108, poste[i].cor, 5);
+		} 
 	}
 }
 
@@ -266,20 +266,33 @@ int main(int argc, char **argv){
 			
 			if(ev.keyboard.keycode == ALLEGRO_KEY_A) {
 				jogador.mov_esq = 1;
+				int i;
+				for (i=0; i<NUM_PRATOS; i++){
+					if(poste[i].status == 1){
+						poste[i].status = 0;
+					}
+				}
 			}
 			else if(ev.keyboard.keycode == ALLEGRO_KEY_D) {
 				jogador.mov_dir = 1;
+				int i;
+				for (i=0; i<NUM_PRATOS; i++){
+					if(poste[i].status == 1){
+						poste[i].status = 0;
+					}
+				}
 			}
 			else if(ev.keyboard.keycode == ALLEGRO_KEY_SPACE){
 				int i;
 				for (i=0; i<NUM_PRATOS; i++){
 					if(jogador.x >= poste[i].position - 4 && jogador.x <= poste[i].position + 4){
 						poste[i].status = 1;
+					}
 						//printf("\nstatus poste[%d] = %d\n----", i, poste[i].status);
-						/* if (ev.keyboard.keycode ==  ALLEGRO_KEY_A || ev.keyboard.keycode ==  ALLEGRO_KEY_D){
+						/* if (ev.keyboard.keycode ==  ALLEGRO_KEY_A && ev.keyboard.keycode ==  ALLEGRO_KEY_D){
 							poste[i].status = 0;
 						} */
-					}
+					
 				}
 			}
 		}
