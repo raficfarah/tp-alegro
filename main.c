@@ -279,21 +279,9 @@ int main(int argc, char **argv){
 			
 			if(ev.keyboard.keycode == ALLEGRO_KEY_A) {
 				jogador.mov_esq = 1;
-				int i;
-				for (i=0; i<NUM_PRATOS; i++){
-					if(poste[i].status == 1){
-						poste[i].status = 0;
-					}
-				}
 			}
 			else if(ev.keyboard.keycode == ALLEGRO_KEY_D) {
 				jogador.mov_dir = 1;
-				int i;
-				for (i=0; i<NUM_PRATOS; i++){
-					if(poste[i].status == 1){
-						poste[i].status = 0;
-					}
-				}
 			}
 			else if(ev.keyboard.keycode == ALLEGRO_KEY_SPACE){
 				int i;
