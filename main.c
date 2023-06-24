@@ -96,7 +96,7 @@ void inicializaJogador(Jogador *j) {
 	j->cor = al_map_rgb(0, 223, 15);
 	j->mov_esq = 0;
 	j->mov_dir = 0;
-	j->vel = 1;
+	j->vel = 1.5;
 }
 
 
