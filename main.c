@@ -8,7 +8,10 @@
 
 #define NUM_PRATOS 8
 
-const float FPS = 60;  
+//ALLEGRO_TIMER *timer = NULL;
+
+
+const float FPS = 50;  
 
 const int SCREEN_W = 954;
 const int SCREEN_H = 540;
@@ -17,6 +20,7 @@ const int POSTE_W = 5;
 const int POSTE_H = 324;
 
 int AUX = 1;
+
 
 //largura do jogador
 const float JOGADOR_W = 50;
@@ -48,6 +52,8 @@ typedef struct Poste {
 	int status;
 	ALLEGRO_COLOR cor;
 } Poste;
+
+
 
 void desenha_cenario() {
 	
@@ -95,6 +101,12 @@ void inicializaJogador(Jogador *j) {
 
 
 float geraTempoPrato(int i) {
+	/* timer = al_create_timer(1.0/FPS);
+	if (i > 2 || i < 5 ){
+		if (timer < 200) {
+			
+		}
+	} */
 	return 1;
 }
 
@@ -115,7 +127,7 @@ void desenhaPrato(Prato pratos[]){
 	ALLEGRO_COLOR BRANCO = al_map_rgb(255,255,255); 
 	for (i=1; i < SCREEN_W; i++){
 		if (i % 106 == 0){
-			al_draw_line(i, 432, i, 108, BRANCO, 5);
+			al_draw_filled_rectangle(i-20, 98, i+20, 108, BRANCO);
 		}
 	}
 
@@ -150,7 +162,7 @@ void atualizaPoste(Poste poste[], Jogador *j) {
 int main(int argc, char **argv){
 	
 	ALLEGRO_DISPLAY *display = NULL;	
-	ALLEGRO_TIMER *timer = NULL;
+	ALLEGRO_TIMER *timer;
 	ALLEGRO_EVENT_QUEUE *event_queue = NULL;
 	
 	//inicializa o Allegro
@@ -160,7 +172,7 @@ int main(int argc, char **argv){
 	}
 	
 	//cria um temporizador que incrementa uma unidade a cada 1.0/FPS segundos
-    timer = al_create_timer(1.0 / FPS);
+    timer = al_create_timer(1.0/FPS);
     if(!timer) {
 		fprintf(stderr, "failed to create timer!\n");
 		return -1;
