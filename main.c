@@ -72,6 +72,7 @@ void desenha_cenario() {
 	
 }
 
+
 void desenha_jogador(Jogador j) {
 	
 	al_draw_filled_triangle(j.x, SCREEN_H - JOGADOR_H, 
@@ -101,11 +102,6 @@ void inicializaJogador(Jogador *j) {
 	j->vel = 1.5;
 }
 
-/* int numAleatorio(int menor, int maior){
-	srand(time(NULL));
-	int num = (rand() % (maior - menor + 1)) + menor;
-	return num;
-} */
 
 void inicializaPratos(Prato pratos[]) {
 	int i;
@@ -151,9 +147,8 @@ void desenhaPrato(Prato pratos[]){
 	}
 }
 
-
 int atualizaPrato(Prato pratos[], Poste poste[],ALLEGRO_TIMER* timer){
-	int i, desenhou = 0;
+	int i;
 	
 	for (i= 0; i < 8; i++){
 		if ((al_get_timer_count(timer)/FPS) - pratos[i].tempo > 0){
@@ -164,7 +159,7 @@ int atualizaPrato(Prato pratos[], Poste poste[],ALLEGRO_TIMER* timer){
 				poste[i].x == pratos[i].x && poste[i].status != 0 && pratos[i].energia >= 3
 			){
 				pratos[i].energia -= 2;
-				printf("\nposte %d ativado", i);
+				//printf("\nposte %d ativado", i);
 			}
 
 			pratos[i].energia += 0.15;
@@ -179,8 +174,6 @@ int atualizaPrato(Prato pratos[], Poste poste[],ALLEGRO_TIMER* timer){
 	}
 	return 1;
 }
-
-
 
 
 void inicializaPoste(Poste poste[]){
@@ -203,6 +196,28 @@ void atualizaPoste(Poste poste[], Jogador *j) {
 			al_draw_line(poste[i].x, 108, poste[i].x, 432, poste[i].cor, 5);
 		}
 	}
+}
+
+
+void salvaScore(int newScore){
+	int oldScore;
+
+	FILE * arq = fopen("recorde.txt", "w");
+	fscanf(arq, "%d", &oldScore);
+	
+	if (newScore >= oldScore){
+		fprintf(arq, "%d", newScore);
+	}
+	
+	fclose(arq);	
+}
+
+void desenhaScore(int Score){
+	char txt[1000];
+	
+	ALLEGRO_FONT *fonte = al_load_font("arial.ttf", 20, 0);
+	sprintf(txt, "%d", Score);
+	al_draw_text(fonte, al_map_rgb(0,0,0), SCREEN_W - 30, SCREEN_H - 30, ALLEGRO_ALIGN_RIGHT, txt);
 }
 
  
@@ -301,6 +316,7 @@ int main(int argc, char **argv){
 	//inicia o temporizador
 	al_start_timer(timer);	
 	
+	int newScore;
 	while(playing) {
 		
 		ALLEGRO_EVENT ev;
@@ -309,16 +325,20 @@ int main(int argc, char **argv){
 		
 		//se o tipo de evento for um evento do temporizador, ou seja, se o tempo passou de t para t+1
 		if(ev.type == ALLEGRO_EVENT_TIMER) {
-
+		
+			newScore = al_get_timer_count(timer)*9;
+			
 		
 			desenha_cenario();
 
-			//desenhaPrato(pratos);
+			//desenha prato e muda estado do jogo caso o prato caia
 			playing = atualizaPrato(pratos, poste, timer);
 
 			atualizaJogador(&jogador);
 			
 			atualizaPoste(poste, &jogador);
+
+			desenhaScore(newScore);
 
 			desenha_jogador(jogador);	
 
@@ -383,7 +403,8 @@ int main(int argc, char **argv){
 		}	
 
 		if(playing == 0) {
-			al_rest(5);
+			salvaScore(newScore);
+			al_rest(2);
 		}
 	}
 

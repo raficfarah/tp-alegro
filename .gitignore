@@ -3,3 +3,6 @@ mods
 .vscode
 print*
 plates.c:Zone*
+allegro-*
+plates*
+recorde.txt
