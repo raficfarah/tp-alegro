@@ -1,10 +1,11 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_image.h>
-//#include <stdlib.h>
 
 #define NUM_PRATOS 8
 
@@ -43,6 +44,7 @@ typedef struct Prato {
 	   1 = prato com maxima energia, prestes a cair */
 	float energia;
 	int status;
+	int tempo;
 	ALLEGRO_COLOR cor;
 	
 } Prato;
@@ -57,8 +59,7 @@ typedef struct Poste {
 
 
 void desenha_cenario() {
-	
-	ALLEGRO_COLOR BKG_COLOR = al_map_rgb(194,0,223);
+	ALLEGRO_COLOR BKG_COLOR = al_map_rgb(153,20,153);
 	ALLEGRO_COLOR POSTE_COLOR = al_map_rgb(255,255,255);
 	//colore a tela de branco (rgb(255,255,255))
 	al_clear_to_color(BKG_COLOR);
@@ -100,46 +101,90 @@ void inicializaJogador(Jogador *j) {
 	j->vel = 1.5;
 }
 
-
-int checaTempoPrato(int i, ALLEGRO_TIMER* timer) {
-	int status;
-	switch (i){
-		case 0:
-		case 7:
-			if((int)(al_get_timer_count(timer)/FPS) % 5 == 0){
-				status = 1;
-			}
-			
-	}
-	return status;
-}
-
+/* int numAleatorio(int menor, int maior){
+	srand(time(NULL));
+	int num = (rand() % (maior - menor + 1)) + menor;
+	return num;
+} */
 
 void inicializaPratos(Prato pratos[]) {
-	ALLEGRO_COLOR VERMELHO = al_map_rgb(255,0,0);
 	int i;
+
+	srand(time(NULL));
+
 	for(i=0; i<NUM_PRATOS; i++) {
 		pratos[i].x = (i+1)*106;
+
+		if (i == 3 || i == 4) {
+			pratos[i].tempo = rand() % 4 + 6;
+		} else if (i == 2 || i == 5) {
+			pratos[i].tempo = rand() % 10 + 20;
+		} else if (i == 1 || i == 6) {
+			pratos[i].tempo = rand() % 14 + 24;
+		} else if (i == 0 || i == 7) {
+			pratos[i].tempo = rand() % 18 + 28;
+		}
 	}
 	
-	pratos[i].energia = 0;
+	pratos[i].energia = 1;
 	pratos[i].status = 0;
-	pratos[i].cor = VERMELHO;
+	pratos[i].cor = al_map_rgb(255,0,0);
 }
 
-void atualizaPrato(Prato pratos[], ALLEGRO_TIMER* timer){
+void desenhaPrato(Prato pratos[]){
 	int i;
+
 	for (i=0; i < NUM_PRATOS; i++){
-		pratos[i].status = checaTempoPrato(i, timer);
 		if (pratos[i].status == 1){
-			al_draw_filled_rectangle(pratos[i].x - 20, 98, pratos[i].x + 20, 108, pratos[i].cor);
+			al_draw_filled_rectangle(
+				pratos[i].x - 20, 98, pratos[i].x + 20, 108,al_map_rgb(255,255-pratos[i].energia,255-pratos[i].energia)
+			);
+		}
+		if (pratos[i].energia >= 255) {
+			al_draw_filled_rectangle(
+				pratos[i].x - 20, 98, pratos[i].x + 20, 108,al_map_rgb(153,20,153)
+			);
+			al_draw_filled_rectangle(
+			pratos[i].x, 440, pratos[i].x + 40, 452,al_map_rgb(255,0,0)
+			);
 		}
 	}
 }
 
+
+int atualizaPrato(Prato pratos[], Poste poste[],ALLEGRO_TIMER* timer){
+	int i, desenhou = 0;
+	
+	for (i= 0; i < 8; i++){
+		if ((al_get_timer_count(timer)/FPS) - pratos[i].tempo > 0){
+			pratos[i].status = 1;
+		}
+		if (pratos[i].status == 1){
+			if (
+				poste[i].x == pratos[i].x && poste[i].status != 0 && pratos[i].energia >= 3
+			){
+				pratos[i].energia -= 2;
+				printf("\nposte %d ativado", i);
+			}
+
+			pratos[i].energia += 0.15;
+			
+			desenhaPrato(pratos);
+
+			if (pratos[i].energia >= 255) {
+					desenhaPrato(pratos);
+					return 0;
+			}
+		}		
+	}
+	return 1;
+}
+
+
+
+
 void inicializaPoste(Poste poste[]){
 	ALLEGRO_COLOR BRANCO = al_map_rgb(255,255,255); 
-	//int aux;
 	int i;
 	for (i=0; i<NUM_PRATOS; i++){
 		poste[i].x = (i+1)*106;
@@ -269,7 +314,7 @@ int main(int argc, char **argv){
 			desenha_cenario();
 
 			//desenhaPrato(pratos);
-			atualizaPrato(pratos, timer);
+			playing = atualizaPrato(pratos, poste, timer);
 
 			atualizaJogador(&jogador);
 			
@@ -280,8 +325,8 @@ int main(int argc, char **argv){
 			//atualiza a tela (quando houver algo para mostrar)
 			al_flip_display();
 			
-			if(al_get_timer_count(timer)%(int)FPS == 0)
-				printf("\n%d segundos se passaram...", (int)(al_get_timer_count(timer)/FPS));
+			/* if(al_get_timer_count(timer)%(int)FPS == 0)
+				printf("\n%d segundos se passaram...", (int)(al_get_timer_count(timer)/FPS)); */
 		}
 		//se o tipo de evento for o fechamento da tela (clique no x da janela)
 		else if(ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
@@ -335,7 +380,11 @@ int main(int argc, char **argv){
 					poste[i].status = 0;
 				}
 			}
-		}		
+		}	
+
+		if(playing == 0) {
+			al_rest(5);
+		}
 	}
 
 	al_destroy_timer(timer);
