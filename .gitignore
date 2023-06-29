@@ -4,5 +4,7 @@ mods
 print*
 plates.c:Zone*
 allegro-*
+*.exe
 plates*
 recorde.txt
+asteroids.c

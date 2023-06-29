@@ -143,6 +143,8 @@ void desenhaPrato(Prato pratos[]){
 			al_draw_filled_rectangle(
 			pratos[i].x, 440, pratos[i].x + 40, 452,al_map_rgb(255,0,0)
 			);
+			al_flip_display();
+			al_rest(1);
 		}
 	}
 }
@@ -199,26 +201,30 @@ void atualizaPoste(Poste poste[], Jogador *j) {
 }
 
 
-void salvaScore(int newScore){
-	int oldScore;
+void drawScore(char *txt, float score, ALLEGRO_FONT *fonte){
+	sprintf(txt, "%.2f", score);
+	al_draw_text(
+		fonte, al_map_rgb(255,255,255), SCREEN_W-30, SCREEN_H - 30, ALLEGRO_ALIGN_RIGHT, txt
+	);
+	//al_flip_display();
+}
 
-	FILE * arq = fopen("recorde.txt", "w");
-	fscanf(arq, "%d", &oldScore);
-	
-	if (newScore >= oldScore){
-		fprintf(arq, "%d", newScore);
+int newRecord(float score, float *record) {
+	FILE *arq = fopen("recorde.txt", "r");
+	*record = -1;
+	if (arq != NULL) {
+		fscanf(arq, "%f", record);
+		fclose(arq);
 	}
-	
-	fclose(arq);	
+	if (*record < score) {
+		arq = fopen("recorde.txt", "w");
+		fprintf(arq, "%.2f", score);
+		fclose(arq);
+		return 1;
+	}
+	return 0;
 }
 
-void desenhaScore(int Score){
-	char txt[1000];
-	
-	ALLEGRO_FONT *fonte = al_load_font("arial.ttf", 20, 0);
-	sprintf(txt, "%d", Score);
-	al_draw_text(fonte, al_map_rgb(0,0,0), SCREEN_W - 30, SCREEN_H - 30, ALLEGRO_ALIGN_RIGHT, txt);
-}
 
  
 int main(int argc, char **argv){
@@ -227,6 +233,12 @@ int main(int argc, char **argv){
 	ALLEGRO_TIMER *timer;
 	ALLEGRO_EVENT_QUEUE *event_queue = NULL;
 	
+	float score = 0;
+	char my_score[100];
+
+
+
+
 	//inicializa o Allegro
 	if(!al_init()) {
 		fprintf(stderr, "failed to initialize allegro!\n");
@@ -316,7 +328,6 @@ int main(int argc, char **argv){
 	//inicia o temporizador
 	al_start_timer(timer);	
 	
-	int newScore;
 	while(playing) {
 		
 		ALLEGRO_EVENT ev;
@@ -325,9 +336,6 @@ int main(int argc, char **argv){
 		
 		//se o tipo de evento for um evento do temporizador, ou seja, se o tempo passou de t para t+1
 		if(ev.type == ALLEGRO_EVENT_TIMER) {
-		
-			newScore = al_get_timer_count(timer)*9;
-			
 		
 			desenha_cenario();
 
@@ -338,9 +346,13 @@ int main(int argc, char **argv){
 			
 			atualizaPoste(poste, &jogador);
 
-			desenhaScore(newScore);
+			//desenhaScore(newScore);
 
-			desenha_jogador(jogador);	
+			desenha_jogador(jogador);
+			
+			//SCORE
+			score = al_get_timer_count(timer)/FPS;
+			drawScore(my_score, score, size_32);
 
 			//atualiza a tela (quando houver algo para mostrar)
 			al_flip_display();
@@ -402,11 +414,36 @@ int main(int argc, char **argv){
 			}
 		}	
 
-		if(playing == 0) {
-			salvaScore(newScore);
-			al_rest(2);
-		}
+	} //playing = 0;
+	
+	char scoretxt[20];
+
+	//pinta a tela de branco.
+	al_clear_to_color(al_map_rgb(255,255,255));
+	// atribui o score a scoretxt, e imprime no meio da tela.
+	sprintf(scoretxt, "Pontuação: %.2f", score);
+	al_draw_text(size_32, al_map_rgb (0,0,0), SCREEN_W/3, SCREEN_H/2, 0, scoretxt);
+
+	
+	float record;
+	if (newRecord(score, &record)) {
+		al_draw_text(
+			size_32,
+			al_map_rgb(255, 0, 0),
+			SCREEN_W/3,
+			100+SCREEN_H/2,
+			0, 
+			"NOVO RECORDE!"
+			);
+	} else {
+		sprintf(scoretxt, "Recorde: %.2f", record);
+		al_draw_text(size_32, al_map_rgb(0, 200, 30), SCREEN_W/3, 100+SCREEN_H/2, 0, scoretxt);
 	}
+
+
+	al_flip_display();
+	al_rest(2);
+
 
 	al_destroy_timer(timer);
 	al_destroy_display(display);
