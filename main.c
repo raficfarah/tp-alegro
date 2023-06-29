@@ -11,7 +11,7 @@
 //ALLEGRO_TIMER *timer = NULL;
 
 
-const float FPS = 50;  
+const float FPS = 60;  
 
 const int SCREEN_W = 954;
 const int SCREEN_H = 540;
@@ -42,15 +42,16 @@ typedef struct Prato {
 	/* um valor entre 0 e 255, em que 0 = prato equilibrado e
 	   1 = prato com maxima energia, prestes a cair */
 	float energia;
-	float tempoParaAparecer;
+	int status;
+	ALLEGRO_COLOR cor;
 	
 } Prato;
 
 typedef struct Poste {
 	int x, y;
-	int position;
 	int status;
 	ALLEGRO_COLOR cor;
+
 } Poste;
 
 
@@ -100,39 +101,41 @@ void inicializaJogador(Jogador *j) {
 }
 
 
-float geraTempoPrato(int i) {
-	/* timer = al_create_timer(1.0/FPS);
-	if (i > 2 || i < 5 ){
-		if (timer < 200) {
+int checaTempoPrato(int i, ALLEGRO_TIMER* timer) {
+	int status;
+	switch (i){
+		case 0:
+		case 7:
+			if((int)(al_get_timer_count(timer)/FPS) % 5 == 0){
+				status = 1;
+			}
 			
-		}
-	} */
-	return 1;
+	}
+	return status;
 }
 
 
 void inicializaPratos(Prato pratos[]) {
-	
-	//CONSERTAR ESTA FUNCAO!
+	ALLEGRO_COLOR VERMELHO = al_map_rgb(255,0,0);
 	int i;
 	for(i=0; i<NUM_PRATOS; i++) {
 		pratos[i].x = (i+1)*106;
-		pratos[i].energia = 0;
-		pratos[i].tempoParaAparecer = geraTempoPrato(i);
 	}
+	
+	pratos[i].energia = 0;
+	pratos[i].status = 0;
+	pratos[i].cor = VERMELHO;
 }
 
-void desenhaPrato(Prato pratos[]){
+void atualizaPrato(Prato pratos[], ALLEGRO_TIMER* timer){
 	int i;
-	ALLEGRO_COLOR BRANCO = al_map_rgb(255,255,255); 
-	for (i=1; i < SCREEN_W; i++){
-		if (i % 106 == 0){
-			al_draw_filled_rectangle(i-20, 98, i+20, 108, BRANCO);
+	for (i=0; i < NUM_PRATOS; i++){
+		pratos[i].status = checaTempoPrato(i, timer);
+		if (pratos[i].status == 1){
+			al_draw_filled_rectangle(pratos[i].x - 20, 98, pratos[i].x + 20, 108, pratos[i].cor);
 		}
 	}
-
 }
-
 
 void inicializaPoste(Poste poste[]){
 	ALLEGRO_COLOR BRANCO = al_map_rgb(255,255,255); 
@@ -140,7 +143,6 @@ void inicializaPoste(Poste poste[]){
 	int i;
 	for (i=0; i<NUM_PRATOS; i++){
 		poste[i].x = (i+1)*106;
-
 	}
 
 	poste[i].y = POSTE_H;
@@ -153,8 +155,8 @@ void atualizaPoste(Poste poste[], Jogador *j) {
 	for (i=0; i<NUM_PRATOS; i++){
 		if (poste[i].status != 0) {
 			poste[i].cor = al_map_rgb(255,0,0);
-		al_draw_line(poste[i].x, 432, poste[i].x, 108, poste[i].cor, 5);
-		} 
+			al_draw_line(poste[i].x, 108, poste[i].x, 432, poste[i].cor, 5);
+		}
 	}
 }
 
@@ -266,8 +268,9 @@ int main(int argc, char **argv){
 		
 			desenha_cenario();
 
-			desenhaPrato(pratos);
-			
+			//desenhaPrato(pratos);
+			atualizaPrato(pratos, timer);
+
 			atualizaJogador(&jogador);
 			
 			atualizaPoste(poste, &jogador);
@@ -291,15 +294,28 @@ int main(int argc, char **argv){
 			
 			if(ev.keyboard.keycode == ALLEGRO_KEY_A) {
 				jogador.mov_esq = 1;
+				int i;
+				for (i=0; i<NUM_PRATOS; i++){
+					poste[i].status = 0;
+				}
 			}
 			else if(ev.keyboard.keycode == ALLEGRO_KEY_D) {
 				jogador.mov_dir = 1;
+				int i;
+				for (i=0; i<NUM_PRATOS; i++){
+					poste[i].status = 0;
+				}
 			}
 			else if(ev.keyboard.keycode == ALLEGRO_KEY_SPACE){
 				int i;
 				for (i=0; i<NUM_PRATOS; i++){
 					if(jogador.x >= poste[i].x - 4 && jogador.x <= poste[i].x + 4){
-						poste[i].status = 1;
+						if(jogador.mov_dir != 0 || jogador.mov_esq != 0){
+							poste[i].status = 0;
+						}
+						else {
+							poste[i].status = 1;
+						}
 					}
 				}
 			}
