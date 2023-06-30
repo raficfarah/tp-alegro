@@ -20,8 +20,6 @@ const int SCREEN_H = 540;
 const int POSTE_W = 5;
 const int POSTE_H = 324;
 
-int AUX = 1;
-
 
 //largura do jogador
 const float JOGADOR_W = 50;
@@ -30,7 +28,6 @@ const float JOGADOR_H = 100;
 typedef struct Jogador {
 	
 	float x;
-	int equilibrando;
 	int mov_esq, mov_dir;
 	ALLEGRO_COLOR cor;
 	float vel;
@@ -95,7 +92,6 @@ void atualizaJogador(Jogador *j) {
 
 void inicializaJogador(Jogador *j) {
 	j->x = SCREEN_W / 2;
-	j->equilibrando = 0;
 	j->cor = al_map_rgb(0, 223, 15);
 	j->mov_esq = 0;
 	j->mov_dir = 0;
