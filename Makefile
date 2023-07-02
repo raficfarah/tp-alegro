@@ -1,4 +1,4 @@
-TARGET=./docsignore/plates
+TARGET=plates
 CC=gcc
 DEBUG=-g
 OPT=-O0

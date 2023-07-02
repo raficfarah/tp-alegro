@@ -8,3 +8,5 @@ allegro-*
 plates*
 recorde.txt
 docsignore
+plates
+*.o
