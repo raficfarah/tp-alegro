@@ -34,6 +34,7 @@ typedef struct Jogador {
 	int mov_esq, mov_dir;
 	ALLEGRO_COLOR cor;
 	float vel;
+	int jogo;
 	
 } Jogador;
 
@@ -46,6 +47,7 @@ typedef struct Prato {
 	int status;
 	int tempo;
 	ALLEGRO_COLOR cor;
+	int cheat;
 	
 } Prato;
 
@@ -62,6 +64,7 @@ void desenha_cenario() {
 	ALLEGRO_COLOR BKG_COLOR = al_map_rgb(153,20,153);
 	ALLEGRO_COLOR POSTE_COLOR = al_map_rgb(255,255,255);
 	//colore a tela de branco (rgb(255,255,255))
+
 	al_clear_to_color(BKG_COLOR);
 	int x;
 	for (x=1; x < SCREEN_W; x++){
@@ -100,6 +103,7 @@ void inicializaJogador(Jogador *j) {
 	j->mov_esq = 0;
 	j->mov_dir = 0;
 	j->vel = 1.5;
+	j->jogo = 1;
 }
 
 
@@ -125,6 +129,8 @@ void inicializaPratos(Prato pratos[]) {
 	pratos[i].energia = 1;
 	pratos[i].status = 0;
 	pratos[i].cor = al_map_rgb(255,0,0);
+
+	pratos[i].cheat = 0;
 }
 
 void desenhaPrato(Prato pratos[]){
@@ -164,13 +170,20 @@ int atualizaPrato(Prato pratos[], Poste poste[],ALLEGRO_TIMER* timer){
 				//printf("\nposte %d ativado", i);
 			}
 
-			pratos[i].energia += 0.15;
+			if (pratos[i].cheat == 0){
+				if (pratos[i].energia < 255 /* && pratos[i].energia > 230 */){
+					pratos[i].energia += 0.15;
+				}
+			else {
+					pratos[i].energia += 0;
+				}
+			}
 			
 			desenhaPrato(pratos);
 
 			if (pratos[i].energia >= 255) {
-					desenhaPrato(pratos);
-					return 0;
+				desenhaPrato(pratos);
+				return 0;
 			}
 		}		
 	}
@@ -235,7 +248,6 @@ int main(int argc, char **argv){
 	
 	float score = 0;
 	char my_score[100];
-
 
 
 
@@ -333,10 +345,10 @@ int main(int argc, char **argv){
 		ALLEGRO_EVENT ev;
 		//espera por um evento e o armazena na variavel de evento ev
 		al_wait_for_event(event_queue, &ev);
-		
+
+
 		//se o tipo de evento for um evento do temporizador, ou seja, se o tempo passou de t para t+1
-		if(ev.type == ALLEGRO_EVENT_TIMER) {
-		
+		if(ev.type == ALLEGRO_EVENT_TIMER) {			
 			desenha_cenario();
 
 			//desenha prato e muda estado do jogo caso o prato caia
@@ -367,7 +379,7 @@ int main(int argc, char **argv){
 		//se o tipo de evento for um pressionar de uma tecla
 		else if(ev.type == ALLEGRO_EVENT_KEY_DOWN) {
 			//imprime qual tecla foi
-			//printf("\ncodigo tecla: %d", ev.keyboard.keycode);
+			printf("\ncodigo tecla: %d", ev.keyboard.keycode);
 			
 			if(ev.keyboard.keycode == ALLEGRO_KEY_A) {
 				jogador.mov_esq = 1;
@@ -385,6 +397,7 @@ int main(int argc, char **argv){
 			}
 			else if(ev.keyboard.keycode == ALLEGRO_KEY_SPACE){
 				int i;
+				jogador.jogo = 0;
 				for (i=0; i<NUM_PRATOS; i++){
 					if(jogador.x >= poste[i].x - 4 && jogador.x <= poste[i].x + 4){
 						if(jogador.mov_dir != 0 || jogador.mov_esq != 0){
@@ -394,6 +407,12 @@ int main(int argc, char **argv){
 							poste[i].status = 1;
 						}
 					}
+				}
+			}
+			else if(ev.keyboard.keycode == ALLEGRO_KEY_P) {
+				int i;
+				for (i=0; i<NUM_PRATOS; i++){
+					pratos[i].cheat = 1;
 				}
 			}
 		}
@@ -410,6 +429,12 @@ int main(int argc, char **argv){
 				int i;
 				for (i=0; i<NUM_PRATOS; i++){
 					poste[i].status = 0;
+				}
+			}
+			else if(ev.keyboard.keycode == ALLEGRO_KEY_P) {
+				int i;
+				for (i=0; i<NUM_PRATOS; i++){
+					pratos[i].cheat = 0;
 				}
 			}
 		}	
