@@ -7,4 +7,4 @@ allegro-*
 *.exe
 plates*
 recorde.txt
-asteroids.c
+docsignore
