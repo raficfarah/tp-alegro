@@ -36,6 +36,9 @@ typedef struct Jogador {
 
 typedef struct Prato {
 	float x;
+	
+	/* um valor entre 0 e 255, em que 0 = prato equilibrado e
+	   1 = prato com maxima energia, prestes a cair */
 	float energia;
 	int status;
 	int tempo;
@@ -117,6 +120,7 @@ void inicializaPratos(Prato pratos[]) {
 	
 	pratos[i].energia = 1;
 	pratos[i].status = 0;
+	pratos[i].cor = al_map_rgb(255,0,0);
 }
 
 void desenhaPrato(Prato pratos[]){
@@ -185,7 +189,7 @@ void inicializaPoste(Poste poste[]){
 void atualizaPoste(Poste poste[], Jogador *j) {
 	int i;
 	for (i=0; i<NUM_PRATOS; i++){
-		if (poste[i].status) {
+		if (poste[i].status != 0) {
 			poste[i].cor = al_map_rgb(255,0,0);
 			al_draw_line(poste[i].x, 108, poste[i].x, 432, poste[i].cor, 5);
 		}
@@ -326,7 +330,6 @@ int main(int argc, char **argv){
 		//espera por um evento e o armazena na variavel de evento ev
 		al_wait_for_event(event_queue, &ev);
 		
-		
 		//se o tipo de evento for um evento do temporizador, ou seja, se o tempo passou de t para t+1
 		if(ev.type == ALLEGRO_EVENT_TIMER) {
 		
@@ -388,9 +391,6 @@ int main(int argc, char **argv){
 						}
 					}
 				}
-			}
-			else if(ev.keyboard.keycode == ALLEGRO_KEY_P){
-				al_rest(6);
 			}
 		}
 		//se o tipo de evento for um soltar de uma tecla
