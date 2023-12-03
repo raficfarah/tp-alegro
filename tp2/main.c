@@ -81,14 +81,14 @@ void desenhaJogadores(Jogador j[]){
 	}
 }
 
-void desenhaTiro(Jogador j){
-	int i;
-	for (i=0; i < 2; i++){
-		if (i==0){
-			al_draw_filled_circle(j[i].x, j[i].tiroH, 2, j[i].cor);
-		}
-	}
-}
+// void desenhaTiro(Jogador j){
+// 	int i;
+// 	for (i=0; i < 2; i++){
+// 		if (i==0){
+// 			al_draw_filled_circle(j[i].x, j[i].tiroH, 2, j[i].cor);
+// 		}
+// 	}
+// }
 
 void atualizaJogadores(Jogador j[]){
 	int i;
