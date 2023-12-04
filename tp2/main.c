@@ -14,7 +14,7 @@
 
 const float FPS = 60;
 
-const int SCREEN_W = 954;
+const int SCREEN_W = 960;
 const int SCREEN_H = 540;
 
 const int POSTE_W = 5;
@@ -30,44 +30,100 @@ typedef struct Jogador {
 
 	float x;
 	float tiroH;
+	float sentido;
+	int codigo;
+	int ordem;
 	int tiro;
-	int sentido;
+	int vidas;
 	ALLEGRO_COLOR cor;
 
 } Jogador;
 
 
-
-void desenha_cenario() {
-	ALLEGRO_COLOR BKG_COLOR = al_map_rgb(153,20,153);
-	//ALLEGRO_COLOR POSTE_COLOR = al_map_rgb(255,255,255);
-	//colore a tela de branco (rgb(255,255,255))
-	al_clear_to_color(BKG_COLOR);
+void atualizaMuro(int **muro, Jogador jogador) {
+	if (jogador.tiro == 1 && jogador.tiroH >= 300){
+		int i, j;
+		for(i=0; i<10; i++){
+			for(j=0; j<40; j++){
+				if (jogador.x+jogador.sentido*JOGADOR_W >= (j*24) &&
+					jogador.x+jogador.sentido*JOGADOR_W <= (j*24 + 24) &&
+					jogador.tiroH > (i*24 + 300) &&
+					jogador.tiroH < (i*24 + 324) &&
+					muro[i][j] == 1)
+				{					
+					muro[i][j]=0;
+				} else {
+					jogador.vidas -= 1;
+				}
+			}
+		}
+	}
 }
+
+void desenha_cenario(int **muro, Jogador jogador[]) {
+	ALLEGRO_COLOR BKG_COLOR = al_map_rgb(153,20,153);
+	//colore a tela de branco (al_clear_to_color(255,255,255))
+	al_clear_to_color(BKG_COLOR);
+	al_draw_filled_rectangle(0, 300, SCREEN_W, 348, al_map_rgb(235, 141, 34));
+	al_draw_filled_rectangle(0, 348, SCREEN_W, 396, al_map_rgb(99, 141, 134));
+	al_draw_filled_rectangle(0, 396, SCREEN_W, 444, al_map_rgb(150, 150, 134));
+	al_draw_filled_rectangle(0, 444, SCREEN_W, 492, al_map_rgb(50, 100, 134));
+	al_draw_filled_rectangle(0, 492, SCREEN_W, SCREEN_H, al_map_rgb(2, 200, 38));
+	//al_draw_line(0, 300, 954, 300, al_map_rgb(255,255,255), 3);
+	
+	atualizaMuro(muro, jogador[0]);
+	atualizaMuro(muro, jogador[1]);
+
+	int i, j;
+	for (i=0; i<10; i++){
+		for (j=0; j<40; j++){
+			if (muro[i][j] == 0){
+				al_draw_filled_rectangle(j*24, 300+i*24, 24+j*24, 324+i*24, al_map_rgb(153,20,153));
+			}
+		}
+	}
+}
+
 
 void inicializaJogadores(Jogador j[]) {
 	int i;
 	for(i=0; i<2; i++){
 		if(i==0){
+			j[i].codigo = 0;
 			j[i].x = 0;
 			j[i].sentido = 1;
 			j[i].cor = al_map_rgb(0, 223, 15);
+			j[i].ordem = 1;
 			j[i].tiroH = JOGADOR1_H;
 		} else {
+			j[i].codigo = 1;
 			j[i].x = SCREEN_W;
 			j[i].sentido = -1;
 			j[i].cor = al_map_rgb(34, 0, 255);
+			j[i].ordem = -1;
 			j[i].tiroH = JOGADOR2_H;
 		}
 	j[i].tiro = 0;
+	j[i].vidas = 3;
+	}
+}
 
+void trocaH(Jogador j[]) {
+	int odd = rand()%2;
+	
+	if (odd){
+		int i;
+		for (i = 0; i<2; i++){
+			j[i].ordem *= -1;
+		};
 	}
 }
 
 void desenhaJogadores(Jogador j[]){
 	int i;
 	for(i=0; i<2; i++){
-		if(i==0){
+		
+		if(j[i].ordem == 1){
 			al_draw_filled_triangle(j[i].x, JOGADOR1_H/2,
 							j[i].x, JOGADOR1_H + JOGADOR1_H/2,
 							j[i].x + j[i].sentido*(JOGADOR_W), JOGADOR1_H,
@@ -81,29 +137,57 @@ void desenhaJogadores(Jogador j[]){
 	}
 }
 
-// void desenhaTiro(Jogador j){
-// 	int i;
-// 	for (i=0; i < 2; i++){
-// 		if (i==0){
-// 			al_draw_filled_circle(j[i].x, j[i].tiroH, 2, j[i].cor);
-// 		}
-// 	}
-// }
-
-void atualizaJogadores(Jogador j[]){
-	int i;
-	for(i=0; i<2; i++){
-		if (j[i].x > 954 || j[i].x < 0) {
-			j[i].sentido *= -1;
+void desenhaTiro(Jogador j){
+	if (j.codigo == 0){
+		if (j.sentido == 1) {
+			al_draw_filled_circle(j.x+JOGADOR_W, j.tiroH, 5, j.cor);
+		} else {
+			al_draw_filled_circle(j.x-JOGADOR_W, j.tiroH, 5, j.cor);
 		}
-		j[i].x += j[i].sentido;
-		if (i==0){
-			if (j[i].tiro == 1){
-				desenhaTiro(j[i]);
-			}
+	} else {
+		if (j.sentido == 1) {
+			al_draw_filled_circle(j.x+JOGADOR_W, j.tiroH, 5, j.cor);
+		} else {
+			al_draw_filled_circle(j.x-JOGADOR_W, j.tiroH, 5, j.cor);
 		}
 	}
 }
+
+
+void atualizaJogadores(Jogador j[]){
+	int i;
+
+	for(i=0; i<2; i++){
+		if (j[i].x > SCREEN_W || j[i].x < 0) {
+			trocaH(j);
+			j[i].sentido *= -1;
+			
+		}
+		j[i].x += j[i].sentido*2;
+		
+		if (j[i].tiro == 1){		
+			desenhaTiro(j[i]);
+			j[i].tiroH *= 1.03;
+		}
+
+		if (j[i].tiroH >= SCREEN_H) {
+			j[i].tiro = 0;
+		}
+	}
+}
+
+int** inicializaMuro(){
+	int i, j;
+	int **muro = (int**)malloc(10*sizeof(int*));
+	for (i=0; i<10; i++){
+		muro[i]=(int*)malloc(40*sizeof(int));
+		for(j=0; j<40; j++){
+			muro[i][j] = 1;
+		}
+	}
+	return muro;
+}
+
 
 
 // void drawScore(char *txt, float score, ALLEGRO_FONT *fonte){
@@ -217,9 +301,11 @@ int main(int argc, char **argv){
 	//JOGADOR
 	Jogador j[2];
 	inicializaJogadores(j);
+	int** muro = inicializaMuro();
 
 
-	int playing=1;
+	//int temMuro = 0;
+	int playing = 1;
 
 	//inicia o temporizador
 	al_start_timer(timer);
@@ -233,13 +319,20 @@ int main(int argc, char **argv){
 
 		//se o tipo de evento for um evento do temporizador, ou seja, se o tempo passou de t para t+1
 		if(ev.type == ALLEGRO_EVENT_TIMER) {
-			desenha_cenario();
+			desenha_cenario(muro, j);
 
 			atualizaJogadores(j);
-
-			//desenhaScore(newScore);
-
 			desenhaJogadores(j);
+
+			int i;
+			for (i=0; i<2; i++){
+				if (j[i].vidas == 0){
+					playing = 0;
+				}
+			}
+			//atualizaMuro(muro, j[0], j[1]);
+			//desenhaScore(newScore);
+			
 
 			//SCORE
 			//score = al_get_timer_count(timer)/FPS;
@@ -276,10 +369,31 @@ int main(int argc, char **argv){
 			// 	}
 
 			if(ev.keyboard.keycode == ALLEGRO_KEY_SPACE){
-				int i;
-						
+				if(j[0].tiro == 1) {
+					j[0].tiro = 0;
+					if (j[0].ordem==1){
+						j[0].tiroH = JOGADOR1_H;
+					} else {
+						j[0].tiroH = JOGADOR2_H;
+					}
+				}
+				//j[0].tiro = 0;
+				j[0].tiro = 1;
 			}
-				
+
+			if(ev.keyboard.keycode == ALLEGRO_KEY_ENTER){
+				if(j[1].tiro == 1) {
+					j[1].tiro = 0;
+					if (j[1].ordem==1){
+						j[1].tiroH = JOGADOR1_H;
+					} else {
+						j[1].tiroH = JOGADOR2_H;
+					}
+				}
+				//j[0].tiro = 0;
+				j[1].tiro = 1;
+			}
+
 
 			// else if(ev.keyboard.keycode == ALLEGRO_KEY_P) {
 			// 	int i;

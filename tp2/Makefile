@@ -1,4 +1,4 @@
-TARGET=plates
+TARGET=spaceships
 CC=gcc
 DEBUG=-g
 OPT=-O0
