@@ -450,7 +450,13 @@ int main(int argc, char **argv){
 	// 	sprintf(scoretxt, "Recorde: %.2f", record);
 	// 	al_draw_text(size_32, al_map_rgb(0, 200, 30), SCREEN_W/3, 100+SCREEN_H/2, 0, scoretxt);
 	// }
-  }
+	}
+	//pinta a tela de branco.
+	char *texto = "acabou";
+	al_clear_to_color(al_map_rgb(255,255,255));
+	// atribui o score a scoretxt, e imprime no meio da tela.
+	//sprintf(scoretxt, "Pontuação: %.2f", score);
+	al_draw_text(size_32, al_map_rgb (0,0,0), SCREEN_W/3, SCREEN_H/2, 0, texto);
 
 
 	al_flip_display();
