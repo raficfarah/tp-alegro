@@ -7,7 +7,6 @@
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_image.h>
 
-#define NUM_PRATOS 8
 
 //ALLEGRO_TIMER *timer = NULL;
 
@@ -16,9 +15,6 @@ const float FPS = 60;
 
 const int SCREEN_W = 960;
 const int SCREEN_H = 540;
-
-const int POSTE_W = 5;
-const int POSTE_H = 324;
 
 
 //largura do jogador
