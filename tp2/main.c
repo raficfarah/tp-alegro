@@ -41,7 +41,7 @@ typedef struct Jogador {
 
 
 void atualizaMuro(int **muro, Jogador jogador) {
-	if (jogador.tiro == 1 && jogador.tiroH >= 300){
+	if (jogador.tiro == 1 && jogador.tiroH >= 300 && jogador.tiroH <= SCREEN_H){
 		int i, j;
 		for(i=0; i<10; i++){
 			for(j=0; j<40; j++){
@@ -50,11 +50,10 @@ void atualizaMuro(int **muro, Jogador jogador) {
 					jogador.tiroH > (i*24 + 300) &&
 					jogador.tiroH < (i*24 + 324) &&
 					muro[i][j] == 1)
-				{					
+				{				
+					printf("\ntrocou");	
 					muro[i][j]=0;
-				} else {
-					jogador.vidas -= 1;
-				}
+				} 
 			}
 		}
 	}
@@ -186,6 +185,18 @@ int** inicializaMuro(){
 		}
 	}
 	return muro;
+}
+
+int acabou(Jogador jogador[]){
+	int i;
+		for (i=0; i<2; i++){
+			if (jogador[i].vidas == 0){
+				return 0;
+			}
+			//printf("\n%d", jogador[i].vidas);
+		}
+	
+	return 1;
 }
 
 
@@ -324,12 +335,8 @@ int main(int argc, char **argv){
 			atualizaJogadores(j);
 			desenhaJogadores(j);
 
-			int i;
-			for (i=0; i<2; i++){
-				if (j[i].vidas == 0){
-					playing = 0;
-				}
-			}
+			playing = acabou(j);
+		
 			//atualizaMuro(muro, j[0], j[1]);
 			//desenhaScore(newScore);
 			
